@@ -11,26 +11,48 @@ using namespace std;
 template <class DT>
 class LinkedList {
     protected:
-        DT data; // what kind of data you are putting in the list
+        DT* data; // what kind of data you are putting in the list
         LinkedList<DT>* _next;// points to the next node in the list.
         int lengthOfLinkedList;// counter to hold my number of elements in linkedlist.
         LinkedList<DT>* _start; //points to the head node, or the first element in the list.
     public:
         LinkedList();
-        void insertItem(DT item); // insert an item
+        LinkedList(DT* _data, LinkedList<DT>* _next);
+        void insertItem(DT& item); // insert an item
         void remove(DT i); // removes a specified element
-        void displayElements(); //displays the elements in the linked list
         int size(); // returns  the size in my list.
         DT infoAt(int i);
+    DT& infoAt__(int pos);
+        void add(DT& x);
 };
 //empty constructor
 template<class DT>
 LinkedList<DT>::LinkedList()
 {
     _next = NULL; // points to the next in the list
-    data = 0;// holds some data value
+    data = NULL;// holds some data value
     _start = NULL; // points to the current node.
     lengthOfLinkedList = 0; //length of my list
+}
+template <class DT>
+LinkedList<DT>::LinkedList(DT* _data, LinkedList<DT>* next)
+{
+    data = _data;
+    _next = next;
+}
+template<class DT>
+void LinkedList<DT>::add(DT& x)
+{
+    LinkedList<DT>* temp = new LinkedList(data,_next);
+    data = new DT(x);
+    _next = temp;
+    
+}
+template<class DT>
+DT& LinkedList<DT>::infoAt__(int pos)
+{
+    if(pos == 0)return *data;
+    else return _next -> infoAt__(pos-1);
 }
 /*
  This method returns the size of the linked list: O(1)
@@ -44,12 +66,13 @@ This method inserts an item into the list of any DataType. Temp is a temp pointe
 Temp will also 'store' the item given. Temp will then point to start which is Null. _start then will point temp which is the currentNode persay.
  */
 template <class DT>
-void LinkedList<DT>::insertItem(DT item) {
+void LinkedList<DT>::insertItem(DT& item) {
     LinkedList<DT>* temp = new LinkedList;
-    temp -> data = item;
+    data  = &item;
     temp -> _next = _start;
     _start  = temp;
     ++lengthOfLinkedList;
+    
 }
 /*
     This method searches for a specified data value and removes it from the list.
@@ -59,7 +82,7 @@ void LinkedList<DT>::remove(DT i) {
     if( _start != NULL)
     {
         LinkedList<DT>* temp = _start;
-        if(i == temp -> data)
+        if(i ==  (*data))
         {
             _start = _start -> _next;
             delete temp;
@@ -67,7 +90,7 @@ void LinkedList<DT>::remove(DT i) {
         }
         else
         {
-            while( temp -> _next != NULL && i != temp-> _next -> data)
+            while( temp -> _next != NULL && i != (*data))
             {
                 temp = temp -> _next;
             }
@@ -90,7 +113,8 @@ DT LinkedList<DT>::infoAt(int index) {
     int count = 0;
     //checks to see if count does not equal the index if it does not, jump to the next node and increment count till the index and count are equal.
     while (count != index) {
-        temp = temp -> _next; //jumping to next node
+        temp = temp -> _next;//jumping to next node
+         data = temp -> data;
         count++; //incrementing count
     }
     // if the list is empty return null.
@@ -99,26 +123,13 @@ DT LinkedList<DT>::infoAt(int index) {
         return 0;
     }
     // return the data at the node temp is pointing at.
-    return temp -> data;
+    return *data;
+    
 
 }
 /*
     This Method displays my elements in the list.
  */
-template<class DT>
-void LinkedList<DT>::displayElements()
-{
-     LinkedList<DT>* temp = _start;
-    //checks to see first if temp is not null
-    while(temp != NULL)
-    {
-    //prints out data at current node
-    cout << temp -> data << endl;
-    //jumps to the next node.
-    temp  = temp -> _next;
-    }
-   
-}
 //TERM CLASS
 class Term
 {
@@ -182,45 +193,33 @@ Polynomail::Polynomail()
 void Polynomail::insertValues(int coeffcient, int exponent)
 {
     Term* temp = new Term;
+    temp  -> setExponent(exponent);
     temp -> setCoefficient(coeffcient);
-    temp -> setExponent(exponent);
     myPoly -> insertItem((*temp));
 }
 void Polynomail::display()
 {
-    cout << myPoly;
 }
 int main() {
    
     LinkedList<int>* x = new LinkedList<int>();
    //cout<<  x -> size();
-    x -> insertItem(1); //insert function
-    x -> insertItem(2); //insert function
-    x -> insertItem(3); //insert function
-    cout << "These are my elements:" <<  endl;
-    x -> displayElements(); //diplays elements
-    cout << "This is the size:";
-    cout << x -> size(); // retruns the size.
+    int* x1 = new int(1);
+    int* x2 = new int (2);
+    int* x3 = new int(27);
+    x -> insertItem((*x1));
+    x -> add((*x1));
+    x -> add((*x2));
+    x -> add((*x3));
+   cout <<  x -> infoAt__(0);
     cout << endl;
-    cout << "This is info at 0 Before Deletion:"<<endl;
-    cout << x -> infoAt(0);
-    cout <<endl;
-    x -> remove(3); //removes 3
-    cout << "Elements after Deletion:"<<endl;
-    x->displayElements();
-    cout << "This is the element at 1 after Deltetion: \n"<<endl;
-    cout << x-> infoAt(1);
-    cout <<endl;
-    //Test on char.
-    LinkedList<char>*  char_x = new LinkedList<char>();
-    char_x -> insertItem('a');
-    cout << "My Char Element:"<<endl;
-    char_x -> displayElements();
-    
-    Polynomail* _x = new Polynomail;
-    _x -> insertValues(2, 3);
-    _x -> display();
-    
+    cout << x -> infoAt__(1);
+    cout<< endl;
+    cout<< x-> infoAt__(3);
+    //x -> insertItem(*x2);
+   // x -> insertItem(1); //insert function
+    //x -> insertItem(2); //insert function
+  // x -> insertItem(3); //insert function
     
     
     
