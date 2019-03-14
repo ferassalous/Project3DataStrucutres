@@ -5,7 +5,6 @@
 //  Created by Feras Salous  on 2/27/19.
 //  Copyright © 2019 Feras Salous . All rights reserved.
 //
-
 #include <iostream>
 using namespace std;
 template <class DT>
@@ -29,6 +28,7 @@ public:
     DT& operator[](int index);
     LinkedList(const LinkedList<DT>&x);
     void insertAt(int index, DT&x);
+    void remove();
 };
 //empty constructor
 template<class DT>
@@ -39,18 +39,21 @@ LinkedList<DT>::LinkedList()
     _start = NULL; // points to the current node.
     lengthOfLinkedList = 0; //length of my list
 }
+//This constructor takes in a data type and a linkedlist pointing to the next node.
 template <class DT>
 LinkedList<DT>::LinkedList(DT& _data, LinkedList<DT>* next)
 {
     data = new DT(_data);
     _next = next;
 }
+// this constructor only takes in a data type
 template <class DT>
 LinkedList<DT>::LinkedList(DT& _data)
 {
     data = new DT(_data);
     _next = NULL;
 }
+// This is my destructor.
 template <class DT>
 LinkedList<DT>::~LinkedList<DT>()
 {
@@ -65,15 +68,19 @@ LinkedList<DT>::~LinkedList<DT>()
         _next = NULL;
     }
 }
+//This is is my add method, which takes in a data type and inserts it into my linked list.
 template<class DT>
 void LinkedList<DT>::add(DT& x)
 {
+    //if the data is null create a new data object of that specified type
     if(data == NULL)
     {
         data = new DT(x);
     }
+    // else create a temp list and store it into that.
     else
     {
+        
         LinkedList<DT>* temp = new LinkedList(*data,_next);
         data = new DT(x);
         _next = temp;
@@ -82,6 +89,7 @@ void LinkedList<DT>::add(DT& x)
     }
     
 }
+/// this returns info at a specific postion from the linked list. A recursice method.
 template<class DT>
 DT& LinkedList<DT>::infoAt(int pos)
 {
@@ -115,9 +123,7 @@ void LinkedList<DT>::insertItem(DT& item) {
     ++lengthOfLinkedList;
     
 }
-/*
- This method searches for a specified data value and removes it from the list.
- */
+//inserts an item at a specified postion.
 template <class DT>
 void LinkedList<DT>::insertAt(int index, DT &x)
 {
@@ -139,15 +145,34 @@ void LinkedList<DT>::insertAt(int index, DT &x)
         }
     }
 }
+template<class DT>
+void LinkedList<DT>::remove()
+{
+    if(data != NULL)
+    {
+        delete data;
+        LinkedList<DT>* temp = _next;
+        data = temp -> data;
+        _next = temp -> _next;
+        temp -> data = NULL;
+        temp -> _next = NULL;
+        delete temp;
+    }
+    
+}
+//Removes an element at a specified index.
 template <class DT>
 void LinkedList<DT>::removeAt(int index) {
     if(index == 0)
     {
-        removeAt(0);
-        
+          remove();
     }
-    else  _next -> removeAt(index -1);
     
+    else
+    {
+        _next -> removeAt(index -1);
+    
+    }
 }
 //Overloaded [] operator which returns the element at [ith] element in the linkedlist.
 template <class DT>
@@ -155,6 +180,7 @@ DT& LinkedList<DT>::operator[](int index)
 {
     return infoAt(index);
 }
+// copy construcor.
 template <class DT>
 LinkedList<DT>::LinkedList(const LinkedList<DT>&x)
 {
@@ -174,7 +200,7 @@ LinkedList<DT>::LinkedList(const LinkedList<DT>&x)
         _next = x._next;
     }
 }
-
+// just a method to get my next element.
 template <class DT>
 void LinkedList<DT>:: getNext()
 {
@@ -206,11 +232,12 @@ Term::Term()
     coefficient = 0;
     exponent = 0;
 }
-Term :: Term(const Term* in)
-{
-    coefficient = in -> coefficient;
-    exponent = in -> exponent;
-}
+
+//Term :: Term(const Term* in)
+//{
+//    coefficient = in -> coefficient;
+//    exponent = in -> exponent;
+//}
 //construcor that takes in a coefficient and term
 Term::Term(int _coefficient,int _exponent)
 {
@@ -254,17 +281,21 @@ public:
     int evaluatePoly(int x);
     int power(int base, int exponent);
     void deleteTerm(int exponent);
-    friend ostream& operator<<(ostream&s,const Polynomail& x);
+    friend ostream& operator<<(ostream&s,const Polynomail* x);
 };
+//empty constructor
 Polynomail::Polynomail()
 {
     myPoly = new LinkedList<Term>();
 }
+/*
+ This method takes in a coefficent and an exponent and inserts them into my LinkedList<Polynomial> while also sorting them by degree of exponent.
+ */
 bool Polynomail::insertValues(int coeffcient, int exponent)
 {
     Term *temp = new Term(coeffcient, exponent);
     bool sucess = false;
-    //cout << "Reached insert Values" << endl;
+    // if myPoly is empty insert the term.
     if(myPoly -> size() == 0)
     {
         myPoly -> add(*temp);
@@ -310,15 +341,18 @@ bool Polynomail::insertValues(int coeffcient, int exponent)
     }
     return sucess;
 }
+// this method removes an elemennt specified an exponet and sets the coeffcient = to zero.
 void Polynomail::deleteTerm(int exponent)
 {
     for(int i = 0; i < myPoly -> size(); ++i)
     {
         if(myPoly->infoAt(i).getExponent() == exponent)
         {
-            myPoly-> infoAt(i).setCoefficient(0);
+            myPoly -> removeAt(i);
         }
+        
     }
+      cout << "There is No Term in this Polynomial with Exponent " << exponent << " To Be Removed."<<endl;
 }
 void Polynomail::printPolynomial()
 {
@@ -334,13 +368,14 @@ void Polynomail::printPolynomial()
     cout << endl;
     
 }
-ostream& operator <<(ostream&s, const Polynomail& x)
+//Overloaded ostream operator
+ostream& operator << (ostream&s, const Polynomail* x)
 {
-    for(int i = 0; i < x.myPoly-> size(); ++i)
+    for(int i = 0; i < x->myPoly-> size(); ++i)
     {
-        // cout<< "Reached Display Method" << endl;
-        s << "(" << x.myPoly -> infoAt(i).getCoefficient() << "," << x.myPoly ->infoAt(i).getExponent()<<")";
-        if(i != x.myPoly -> size()-1)
+        // s << "Reached Display Method" << endl;
+        s << "(" << x->myPoly -> infoAt(i).getCoefficient() << "," << x->myPoly ->infoAt(i).getExponent()<<")";
+        if(i != x->myPoly -> size()-1)
         {
             s << "+";
         }
@@ -348,25 +383,31 @@ ostream& operator <<(ostream&s, const Polynomail& x)
     s << endl;
     return s;
 }
+// Polynomial Addition method.
 Polynomail* Polynomail:: addPolynomail(Polynomail& x)
 {
     Polynomail* temp = new Polynomail();
+    // this loops through myPoly and gets the coefficents and exponents and inserts them into a polynomial.
     for(int i = 0; i < myPoly ->size(); ++i)
     {
+        //getting the coeffeicient
         int coeffcientOfMyPoly = myPoly -> infoAt(i).getCoefficient();
+        //getting the exponent
         int exponentOfMyPoly = myPoly -> infoAt(i).getExponent();
         temp -> insertValues(coeffcientOfMyPoly, exponentOfMyPoly);
     }
-        for(int j = 0; j < x.myPoly -> size(); ++j)
-        {
+    // this loops through the given poly in the parameter and gets the coefficents and exponents and inserts them into a polynomial.
+    for(int j = 0; j < x.myPoly -> size(); ++j)
+    {
         int coefficentOfMyPolyToAdd = x.myPoly->infoAt(j).getCoefficient();
         int exponentOfMyPolyToAdd = x.myPoly->infoAt(j).getExponent();
         temp -> insertValues(coefficentOfMyPolyToAdd, exponentOfMyPolyToAdd);
-        }
+    }
     
     
     return temp;
 }
+//Overloaded Addition opeprator
 Polynomail* Polynomail:: operator+(Polynomail &x)
 {
     Polynomail* temp = new Polynomail();
@@ -386,19 +427,21 @@ Polynomail* Polynomail:: operator+(Polynomail &x)
     
     return temp;
 }
-
+//Evaluates the polynomial with a given X value.
 int Polynomail::evaluatePoly(int x)
 {
-    int result = 0;
+    int result = 0; // the result following evaluation
     for(int i =0; i < myPoly ->size(); i++)
     {
-        int coeffecient = myPoly->infoAt(i).getCoefficient();
-        result += (coeffecient * power(x,myPoly->infoAt(i).getExponent()));
+        int coeffecient = myPoly->infoAt(i).getCoefficient(); // get the coefficent.
+        result += (coeffecient * power(x,myPoly->infoAt(i).getExponent())); // multiply the coefficent * base to the power of the exponent.
     }
     return result;
 }
+// A function to provide me the abilty to do power functions
 int Polynomail::power(int base, int exponent)
 {
+    // if the exponent is 0, retrun 1
     if (exponent == 0)
     {
         return 1;
@@ -408,6 +451,7 @@ int Polynomail::power(int base, int exponent)
         return base * power(base, exponent - 1);
     }
 }
+//Multiplication method
 Polynomail* Polynomail:: multiplyPolynomial(Polynomail &x)
 {
     Polynomail* temp = new Polynomail();
@@ -415,7 +459,9 @@ Polynomail* Polynomail:: multiplyPolynomial(Polynomail &x)
     {
         for(int j =0; j < x.myPoly-> size(); ++j)
         {
+            // get the coefficents and myltiply them together.
             int coeffcient = myPoly-> infoAt(i).getCoefficient() * x.myPoly -> infoAt(j).getCoefficient();
+            //get the exponents and add them togeehter.
             int exponent = myPoly -> infoAt(i).getExponent() + x.myPoly -> infoAt(j).getExponent();
             temp -> insertValues(coeffcient, exponent);
             
@@ -423,6 +469,7 @@ Polynomail* Polynomail:: multiplyPolynomial(Polynomail &x)
     }
     return temp;
 }
+//Multiplication Operator
 Polynomail* Polynomail:: operator*(Polynomail &x)
 {
     Polynomail* temp = new Polynomail();
@@ -439,6 +486,7 @@ Polynomail* Polynomail:: operator*(Polynomail &x)
     return temp;
     
 }
+// gets the polynomial, not used but thought i wouldve needed it.
 LinkedList<Term>* Polynomail:: getMyPoly()
 {
     return myPoly;
@@ -457,49 +505,15 @@ int main() {
                 break;
             case 'D': cin >> polynum >> exponent;
                 Polynomials[polynum].deleteTerm(exponent);break;
-            case 'A': cin >> i >> j; cout << (Polynomials[i] + (Polynomials[j])) ;  break;
-            case 'P': cin >> polynum;  Polynomials[polynum].printPolynomial(); break;
-            case 'M': cin >> i >> j; (Polynomials[i] * Polynomials[j]) -> printPolynomial(); break;
-            case 'E': cin >> polynum >> value; cout << Polynomials[polynum].evaluatePoly(value) << endl; break;
+            case 'A': cin >> i >> j; cout << "The Result Of Additon is:"; cout << Polynomials[i] + Polynomials[j];  break;
+            case 'P': cin >> polynum; cout <<"Polynomial " << polynum<<": "; cout << &Polynomials[polynum]; break;
+            case 'M': cin >> i >> j; cout << "The Result Of Multiplication is:"; cout << Polynomials[i] * Polynomials[j]; break;
+            case 'E': cin >> polynum >> value; cout << "The result of Polynomial:" << polynum<<" Evaluated at X=" << value << ": ";
+                cout << Polynomials[polynum].evaluatePoly(value) << endl; break;
             default: cout << "I missed Something."<<endl;
         }
         cin >> command;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-//  Polynomail *p = new Polynomail();
-//    Polynomail *n = new Polynomail();
- // p -> insertValues(1, 2);
-//    p-> insertValues(2, 4);
-//    n -> insertValues(2, 3);
-//    n -> insertValues(2, 1);
-//    Polynomail *temp = new Polynomail();
-//    Polynomail *temp2 = new Polynomail();
-//    temp = *p + *n;
-//    temp2 = *p * *n;
-//    cout << "This is the result of addition" <<endl;
-//    temp -> printPolynomial();
-//    cout << endl;
-//    cout << "This is the result of Multiplication:"<<endl;
-//    temp2 -> printPolynomial();
-//    //cout << temp -> getMyPoly() -> size();
-//    cout << "The result of Evaluating Polynomial 1:"<<endl;
-//    cout << temp -> evaluatePoly(2) << endl;
-//    //n -> printPolynomial();
-//       cout << "The result of Evaluating Polynomial 2:"<<endl;
-//    cout << temp2 -> evaluatePoly(4);
-//    cout <<endl;
-//
-    // cout<< "The size is:" <<  p -> size() << endl;
-    // p -> printPolynomial();
     return 0;
     
 }
